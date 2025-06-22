@@ -12,23 +12,27 @@ document.addEventListener('DOMContentLoaded', () => {
     db.collection("letters")
     .orderBy("date", "desc")
     .get()
-    .then((snapshot) => {
+    .then(snapshot => {
       allLetters = snapshot.docs.map(doc => doc.data());
-      displayLetters(allLetters);
+      console.log("✅ Letters loaded:", allLetters.length);
+      if (viewSelect.value === 'view') {
+        toggleView(); // Refresh the view if we're already in "view" mode
+      }
     })
-    .catch((err) => {
+    .catch(err => {
       lettersList.innerHTML = '<p>Failed to load letters.</p>';
       console.error('❌ Error loading letters:', err);
     });
   }
 
-  // Display filtered letters
+  // Display letters
   function displayLetters(letters) {
     lettersList.innerHTML = '';
     if (letters.length === 0) {
       lettersList.innerHTML = '<p>No letters found.</p>';
       return;
     }
+
     letters.forEach(letter => {
       const letterDiv = document.createElement('div');
       letterDiv.className = 'letter';
@@ -41,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Handle form submission and save to Firestore
+  // Handle letter submission
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const recipient = form.recipient.value.trim();
@@ -55,36 +59,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     db.collection("letters").add({ recipient, message, date })
     .then(() => {
-      console.log("✅ Letter submitted, switching to view...");
+      console.log("✅ Letter submitted to Firestore");
       form.reset();
       viewSelect.value = 'view';
-      toggleView();        // 🔥 Force the switch manually
-      loadLetters();       // 🔁 Refresh the list
+      toggleView();   // Switch to view mode
+      loadLetters();  // Reload letters
     })
-    .catch((err) => {
+    .catch(err => {
       alert('Error sending letter. Please try again.');
       console.error('❌ Error sending letter:', err);
     });
   });
 
-  // Toggle views (submit or view)
+  // View switcher
   function toggleView() {
-    console.log("🔄 Toggling to:", viewSelect.value);
+    const isSubmit = viewSelect.value === 'submit';
 
-    if (viewSelect.value === 'submit') {
-      form.style.display = 'block';
-      searchContainer.style.display = 'none';
-      lettersList.style.display = 'none';
-    } else {
-      form.style.display = 'none';
-      searchContainer.style.display = 'block';
-      lettersList.style.display = 'block';
+    form.style.display = isSubmit ? 'block' : 'none';
+    searchContainer.style.display = isSubmit ? 'none' : 'block';
+    lettersList.style.display = isSubmit ? 'none' : 'block';
 
+    if (!isSubmit) {
       const searchTerm = searchInput.value.trim().toLowerCase();
-      console.log("🔍 Searching for:", searchTerm);
 
       if (searchTerm === '') {
-        displayLetters(allLetters);
+        lettersList.innerHTML = '<p>Type a name to search for letters sent to that person.</p>';
       } else {
         const filtered = allLetters.filter(letter =>
         letter.recipient.toLowerCase().includes(searchTerm)
@@ -94,21 +93,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Live search
+  // Live search input
   searchInput.addEventListener('input', () => {
     const searchTerm = searchInput.value.trim().toLowerCase();
+
     if (searchTerm === '') {
-      displayLetters(allLetters);
-      return;
+      lettersList.innerHTML = '<p>Type a name to search for letters sent to that person.</p>';
+    } else {
+      const filtered = allLetters.filter(letter =>
+      letter.recipient.toLowerCase().includes(searchTerm)
+      );
+      displayLetters(filtered);
     }
-    const filtered = allLetters.filter(letter =>
-    letter.recipient.toLowerCase().includes(searchTerm)
-    );
-    displayLetters(filtered);
   });
 
-  // Set up the toggleView switch
+  // Dropdown change triggers toggle
   viewSelect.addEventListener('change', toggleView);
-  toggleView();   // Initial load
-  loadLetters();  // Fetch data
+
+  // Initialize view
+  toggleView();
+  loadLetters();
 });
