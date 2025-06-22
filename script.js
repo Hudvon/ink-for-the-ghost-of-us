@@ -4,27 +4,33 @@ document.addEventListener('DOMContentLoaded', () => {
   const viewSelect = document.getElementById('viewSelect');
   const searchContainer = document.getElementById('searchContainer');
   const searchInput = document.getElementById('searchInput');
+
   let allLetters = [];
 
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const recipient = form.recipient.value.trim();
-    const category = form.category ? form.category.value.trim() : '';
-    const message = form.message.value.trim();
-    const date = new Date().toISOString();
+  const quotes = [
+    "We write not to be heard, but to remember that we were here.",
+    "Each letter is a ghost of something we couldn’t say out loud.",
+    "Ink carries what voices never could.",
+    "These are not messages — they are memories stitched in silence.",
+    "To write is to remember, to remember is to feel again."
+  ];
 
-    if (!recipient || !message) return alert('Fill in both recipient and message.');
-
-                        db.collection("letters").add({ recipient, message, date, category }).then(() => {
-                          form.reset();
-                          viewSelect.value = 'view';
-                          loadLetters();
-                        });
-  });
+  function showRandomQuote() {
+    const quote = quotes[Math.floor(Math.random() * quotes.length)];
+    document.getElementById('quoteBox').textContent = `"${quote}"`;
+  }
 
   function loadLetters() {
     db.collection("letters").orderBy("date", "desc").get().then(snapshot => {
       allLetters = snapshot.docs.map(doc => doc.data());
+
+      // Live letter count
+      const countDisplay = document.getElementById('letterCount');
+      if (countDisplay) {
+        const total = allLetters.length;
+        countDisplay.textContent = `📝 ${total} letter${total !== 1 ? 's' : ''} written... each one a whisper into eternity.`;
+      }
+
       if (viewSelect.value === 'view') toggleView();
     });
   }
@@ -41,7 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
       div.innerHTML = `
       <div class="recipient">To: ${letter.recipient}</div>
       <div class="date">${new Date(letter.date).toLocaleString()}</div>
-      <div class="category">Category: ${letter.category || 'None'}</div>
       <div class="message">${letter.message}</div>`;
       lettersList.appendChild(div);
     });
@@ -52,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     form.style.display = isSubmit ? 'block' : 'none';
     searchContainer.style.display = isSubmit ? 'none' : 'block';
     lettersList.style.display = isSubmit ? 'none' : 'block';
+
     const searchTerm = searchInput.value.trim().toLowerCase();
     if (!isSubmit) {
       if (searchTerm === '') {
@@ -62,6 +68,21 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const recipient = form.recipient.value.trim();
+    const message = form.message.value.trim();
+    const date = new Date().toISOString();
+
+    if (!recipient || !message) return alert('Please fill in both recipient and message.');
+
+                        db.collection("letters").add({ recipient, message, date }).then(() => {
+                          form.reset();
+                          viewSelect.value = 'view';
+                          loadLetters();
+                        });
+  });
 
   searchInput.addEventListener('input', () => {
     const searchTerm = searchInput.value.trim().toLowerCase();
@@ -74,6 +95,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   viewSelect.addEventListener('change', toggleView);
+
+  showRandomQuote();
   toggleView();
   loadLetters();
 });

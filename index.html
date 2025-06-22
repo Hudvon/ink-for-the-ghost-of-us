@@ -13,6 +13,12 @@
       <p class="tagline">Every quiet goodbye, remembered gently — written in silence, suspended in time.</p>
     </header>
 
+    <!-- 🌟 Special Quote -->
+    <div id="quoteBox" class="quote-box" style="text-align: center; margin-bottom: 20px; font-style: italic; color: #6b4c3b;"></div>
+
+    <!-- 📝 Live Letter Counter -->
+    <p id="letterCount" style="text-align:center; color:#a67c52; font-weight:bold; font-family: 'Georgia', serif; margin-bottom: 30px;"></p>
+
     <div class="menu">
       <select id="viewSelect" aria-label="Select view">
         <option value="submit">Submit Letter</option>
@@ -41,7 +47,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
-  <!-- Firebase Init -->
+  <!-- Firebase Config -->
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBMDUTYCgbZ7x7c7YPaxjd6LCoDfKidLfY",
@@ -52,13 +58,11 @@
       appId: "1:824847629052:web:866119645d2d1654ad3579",
       measurementId: "G-49KVKE6XTG"
     };
-
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
   </script>
 
-  <!-- Your App Logic -->
+  <!-- Main App -->
   <script src="script.js"></script>
 </body>
 </html>
