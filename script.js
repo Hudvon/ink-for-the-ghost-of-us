@@ -56,9 +56,9 @@ document.addEventListener('DOMContentLoaded', () => {
     db.collection("letters").add({ recipient, message, date })
     .then(() => {
       form.reset();
-      loadLetters();
       viewSelect.value = 'view';
-      toggleView();
+      viewSelect.dispatchEvent(new Event('change')); // 🔥 Fixes view switch
+      loadLetters(); // refresh letters list
     })
     .catch((err) => {
       alert('Error sending letter. Please try again.');
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
       lettersList.style.display = 'block';
       const searchTerm = searchInput.value.trim().toLowerCase();
       if (searchTerm === '') {
-        lettersList.innerHTML = '<p>Type a name to search for letters sent to that person.</p>';
+        displayLetters(allLetters);
       } else {
         const filtered = allLetters.filter(letter =>
         letter.recipient.toLowerCase().includes(searchTerm)
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
   searchInput.addEventListener('input', () => {
     const searchTerm = searchInput.value.trim().toLowerCase();
     if (searchTerm === '') {
-      lettersList.innerHTML = '<p>Type a name to search for letters sent to that person.</p>';
+      displayLetters(allLetters);
       return;
     }
     const filtered = allLetters.filter(letter =>
@@ -105,3 +105,4 @@ document.addEventListener('DOMContentLoaded', () => {
   toggleView();
   loadLetters();
 });
+
