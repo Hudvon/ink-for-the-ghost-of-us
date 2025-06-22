@@ -57,8 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(() => {
       form.reset();
       viewSelect.value = 'view';
-      viewSelect.dispatchEvent(new Event('change')); // 🔥 Fixes view switch
-      loadLetters(); // refresh letters list
+      toggleView();       // ✅ Directly switch view here
+      loadLetters();      // 🔄 Refresh letters
     })
     .catch((err) => {
       alert('Error sending letter. Please try again.');
@@ -76,33 +76,9 @@ document.addEventListener('DOMContentLoaded', () => {
       form.style.display = 'none';
       searchContainer.style.display = 'block';
       lettersList.style.display = 'block';
+
       const searchTerm = searchInput.value.trim().toLowerCase();
       if (searchTerm === '') {
         displayLetters(allLetters);
       } else {
-        const filtered = allLetters.filter(letter =>
-        letter.recipient.toLowerCase().includes(searchTerm)
-        );
-        displayLetters(filtered);
-      }
-    }
-  }
-
-  // Live search
-  searchInput.addEventListener('input', () => {
-    const searchTerm = searchInput.value.trim().toLowerCase();
-    if (searchTerm === '') {
-      displayLetters(allLetters);
-      return;
-    }
-    const filtered = allLetters.filter(letter =>
-    letter.recipient.toLowerCase().includes(searchTerm)
-    );
-    displayLetters(filtered);
-  });
-
-  viewSelect.addEventListener('change', toggleView);
-  toggleView();
-  loadLetters();
-});
 
