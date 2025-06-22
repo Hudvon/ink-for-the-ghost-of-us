@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .catch((err) => {
       lettersList.innerHTML = '<p>Failed to load letters.</p>';
-      console.error('Error loading letters:', err);
+      console.error('❌ Error loading letters:', err);
     });
   }
 
@@ -55,19 +55,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     db.collection("letters").add({ recipient, message, date })
     .then(() => {
+      console.log("✅ Letter submitted, switching to view...");
       form.reset();
       viewSelect.value = 'view';
-      toggleView();       // ✅ Directly switch view here
-      loadLetters();      // 🔄 Refresh letters
+      toggleView();        // 🔥 Force the switch manually
+      loadLetters();       // 🔁 Refresh the list
     })
     .catch((err) => {
       alert('Error sending letter. Please try again.');
-      console.error('Error sending letter:', err);
+      console.error('❌ Error sending letter:', err);
     });
   });
 
   // Toggle views (submit or view)
   function toggleView() {
+    console.log("🔄 Toggling to:", viewSelect.value);
+
     if (viewSelect.value === 'submit') {
       form.style.display = 'block';
       searchContainer.style.display = 'none';
@@ -78,7 +81,34 @@ document.addEventListener('DOMContentLoaded', () => {
       lettersList.style.display = 'block';
 
       const searchTerm = searchInput.value.trim().toLowerCase();
+      console.log("🔍 Searching for:", searchTerm);
+
       if (searchTerm === '') {
         displayLetters(allLetters);
       } else {
+        const filtered = allLetters.filter(letter =>
+        letter.recipient.toLowerCase().includes(searchTerm)
+        );
+        displayLetters(filtered);
+      }
+    }
+  }
 
+  // Live search
+  searchInput.addEventListener('input', () => {
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    if (searchTerm === '') {
+      displayLetters(allLetters);
+      return;
+    }
+    const filtered = allLetters.filter(letter =>
+    letter.recipient.toLowerCase().includes(searchTerm)
+    );
+    displayLetters(filtered);
+  });
+
+  // Set up the toggleView switch
+  viewSelect.addEventListener('change', toggleView);
+  toggleView();   // Initial load
+  loadLetters();  // Fetch data
+});
