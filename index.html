@@ -12,24 +12,38 @@
       <h1>Ink for the Ghosts of Us</h1>
       <p class="tagline">Every quiet goodbye, remembered gently — written in silence, suspended in time.</p>
     </header>
+
     <div class="menu">
       <select id="viewSelect" aria-label="Select view">
         <option value="submit">Submit Letter</option>
         <option value="view">View Letters</option>
       </select>
     </div>
+
     <form id="letterForm">
       <label for="recipient">Recipient:</label>
       <input type="text" id="recipient" name="recipient" required />
+
       <label for="message">Message:</label>
       <textarea id="message" name="message" rows="5" required></textarea>
+
       <button type="submit">Send Letter</button>
     </form>
+
     <div id="searchContainer" style="display:none; margin-bottom: 15px;">
       <input type="text" id="searchInput" placeholder="Search letters by recipient name..." aria-label="Search letters" />
     </div>
+
     <div id="lettersList"></div>
   </div>
-  <script src="script.js"></script>
-</body>
-</html>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <!-- Firebase Init -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBMDUTYCgbZ7x7c7YPaxjd6LCoDfKidLfY",
+      authDomain: "ghost-letters.firebaseapp.com",
+      projectId: "g
