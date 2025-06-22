@@ -7,21 +7,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let allLetters = [];
 
-  // Fetch and display letters
+  // Load letters from Firestore
   function loadLetters() {
-    fetch('/api/letters')
-      .then(response => response.json())
-      .then(letters => {
-        allLetters = letters.reverse();
-        displayLetters(allLetters);
-      })
-      .catch(err => {
-        lettersList.innerHTML = '<p>Failed to load letters.</p>';
-        console.error('Error loading letters:', err);
-      });
+    db.collection("letters")
+    .orderBy("date", "desc")
+    .get()
+    .then((snapshot) => {
+      allLetters = snapshot.docs.map(doc => doc.data());
+      displayLetters(allLetters);
+    })
+    .catch((err) => {
+      lettersList.innerHTML = '<p>Failed to load letters.</p>';
+      console.error('Error loading letters:', err);
+    });
   }
 
-  // Display letters filtered by search term
+  // Display filtered letters
   function displayLetters(letters) {
     lettersList.innerHTML = '';
     if (letters.length === 0) {
@@ -32,47 +33,40 @@ document.addEventListener('DOMContentLoaded', () => {
       const letterDiv = document.createElement('div');
       letterDiv.className = 'letter';
       letterDiv.innerHTML = `
-        <div class="recipient">To: ${letter.recipient}</div>
-        <div class="date">${new Date(letter.date).toLocaleString()}</div>
-        <div class="message">${letter.message}</div>
+      <div class="recipient">To: ${letter.recipient}</div>
+      <div class="date">${new Date(letter.date).toLocaleString()}</div>
+      <div class="message">${letter.message}</div>
       `;
       lettersList.appendChild(letterDiv);
     });
   }
 
-  // Handle form submission
+  // Handle form submission and save to Firestore
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const recipient = form.recipient.value.trim();
     const message = form.message.value.trim();
+    const date = new Date().toISOString();
+
     if (!recipient || !message) {
       alert('Please fill in both recipient and message.');
       return;
     }
-    fetch('/api/letters', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recipient, message })
+
+    db.collection("letters").add({ recipient, message, date })
+    .then(() => {
+      form.reset();
+      loadLetters();
+      viewSelect.value = 'view';
+      toggleView();
     })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to send letter');
-        }
-        return response.json();
-      })
-      .then(newLetter => {
-        form.reset();
-        loadLetters();
-        viewSelect.value = 'view';
-        toggleView();
-      })
-      .catch(err => {
-        alert('Error sending letter. Please try again.');
-        console.error('Error sending letter:', err);
-      });
+    .catch((err) => {
+      alert('Error sending letter. Please try again.');
+      console.error('Error sending letter:', err);
+    });
   });
 
-  // Toggle between submit form and letters view
+  // Toggle views (submit or view)
   function toggleView() {
     if (viewSelect.value === 'submit') {
       form.style.display = 'block';
@@ -87,14 +81,14 @@ document.addEventListener('DOMContentLoaded', () => {
         lettersList.innerHTML = '<p>Type a name to search for letters sent to that person.</p>';
       } else {
         const filtered = allLetters.filter(letter =>
-          letter.recipient.toLowerCase().includes(searchTerm)
+        letter.recipient.toLowerCase().includes(searchTerm)
         );
         displayLetters(filtered);
       }
     }
   }
 
-  // Search letters by recipient name with dynamic filtering as user types
+  // Live search
   searchInput.addEventListener('input', () => {
     const searchTerm = searchInput.value.trim().toLowerCase();
     if (searchTerm === '') {
@@ -102,15 +96,12 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     const filtered = allLetters.filter(letter =>
-      letter.recipient.toLowerCase().includes(searchTerm)
+    letter.recipient.toLowerCase().includes(searchTerm)
     );
     displayLetters(filtered);
   });
 
-  // Listen for dropdown change
   viewSelect.addEventListener('change', toggleView);
-
-  // Initialize view
   toggleView();
   loadLetters();
 });
